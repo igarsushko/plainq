@@ -17,9 +17,13 @@
     <maven.compiler.plugin.version>3.0</maven.compiler.plugin.version>
     <maven.versions.plugin.version>2.0</maven.versions.plugin.version>
     <maven.jar.plugin.version>2.4</maven.jar.plugin.version>
+    <maven.assembly.plugin.version>2.4</maven.assembly.plugin.version>
+    <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
     <slf4j.version>1.7.2</slf4j.version>
     <logback.version>1.0.9</logback.version>
+    <jms.api.version>1.1-rev-1</jms.api.version>
   </properties>
+
 
   <dependencies>
 
@@ -38,12 +42,22 @@
     <dependency>
       <groupId>javax.jms</groupId>
       <artifactId>jms-api</artifactId>
-      <version>1.1-rev-1</version>
+      <version>${jms.api.version}</version>
     </dependency>
 
   </dependencies>
 
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>**/*</include>
+        </includes>
+      </resource>
+    </resources>
+    
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -94,6 +108,47 @@
             </manifest>
           </archive>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>${maven.assembly.plugin.version}</version>
+        <executions>
+          <execution>
+            <phase>install</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <descriptors>
+            <descriptor>${project.basedir}/src/main/resources/standaloneAssembly.xml</descriptor>
+          </descriptors>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>${maven.antrun.plugin.version}</version>
+        <executions>
+          <execution>
+            <phase>install</phase>
+            <configuration>
+              <target>
+                <echo
+                  message="Unzipping distro: [${project.artifactId}-${project.version}-standalone.zip] ..." />
+                <unzip
+                  src="${project.build.directory}/${project.artifactId}-${project.version}-standalone.zip"
+                  dest="target/runtime" />
+                <chmod dir="target/runtime" perm="0777" includes="**/*" />
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

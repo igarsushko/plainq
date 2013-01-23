@@ -1,0 +1,31 @@
+<assembly>
+  <id>standalone</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+
+  <dependencySets>
+    <dependencySet>
+      <scope>compile</scope>
+      <outputDirectory>${project.artifactId}/lib</outputDirectory>
+      <useTransitiveDependencies>true</useTransitiveDependencies>
+      <unpack>false</unpack>
+    </dependencySet>
+  </dependencySets>
+
+  <fileSets>
+    <fileSet>
+      <!-- bundle filtered recources-->
+      <directory>${basedir}/target/classes</directory>
+      <outputDirectory>${project.artifactId}</outputDirectory>
+      <includes>
+        <include>**/*.bat</include>
+        <include>**/*.sh</include>
+        <include>**/*.txt</include>
+      </includes>
+      <fileMode>750</fileMode>
+    </fileSet>
+  </fileSets>
+
+</assembly>
