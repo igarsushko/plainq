@@ -7,7 +7,7 @@
 
   <dependencySets>
     <dependencySet>
-      <scope>compile</scope>
+      <scope>runtime</scope><!-- runtime excludes provided jars -->
       <outputDirectory>${project.artifactId}/lib</outputDirectory>
       <useTransitiveDependencies>true</useTransitiveDependencies>
       <unpack>false</unpack>

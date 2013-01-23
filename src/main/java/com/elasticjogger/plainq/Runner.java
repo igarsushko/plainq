@@ -1,15 +1,32 @@
 package com.elasticjogger.plainq;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.ConnectionMetaData;
 
 public class Runner
 {
 
-  static final Logger logger = LoggerFactory.getLogger(Runner.class);
+  ClassLoader classLoader;
 
-  public static void main(String args[])
+  public Runner()
   {
-    logger.info("hello");
+    classLoader = this.getClass().getClassLoader();
+  }
+
+  public void start() throws Exception
+  {
+    Runner runner = new Runner();
+    runner.doJob();
+  }
+
+  public void doJob() throws Exception
+  {
+    Class amqClass = classLoader.loadClass("org.apache.activemq.ActiveMQConnectionFactory");
+
+    ConnectionFactory factory = (ConnectionFactory) amqClass.newInstance();
+    Connection conn = factory.createConnection();
+    ConnectionMetaData metadata = conn.getMetaData();
+    System.out.println(metadata.getJMSVersion());
   }
 }

@@ -19,30 +19,18 @@
     <maven.jar.plugin.version>2.4</maven.jar.plugin.version>
     <maven.assembly.plugin.version>2.4</maven.assembly.plugin.version>
     <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
-    <slf4j.version>1.7.2</slf4j.version>
-    <logback.version>1.0.9</logback.version>
     <jms.api.version>1.1-rev-1</jms.api.version>
   </properties>
 
 
   <dependencies>
 
-    <!-- Logging -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>${slf4j.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>${logback.version}</version>
-    </dependency>
-
     <dependency>
       <groupId>javax.jms</groupId>
       <artifactId>jms-api</artifactId>
       <version>${jms.api.version}</version>
+      <!-- to avoid class cast exceptions -->
+      <scope>provided</scope>
     </dependency>
 
   </dependencies>
@@ -57,7 +45,7 @@
         </includes>
       </resource>
     </resources>
-    
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -103,7 +91,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>com.elasticjogger.plainq.Runner</mainClass>
+              <mainClass>com.elasticjogger.plainq.AppRunner</mainClass>
               <addClasspath>true</addClasspath>
             </manifest>
           </archive>
