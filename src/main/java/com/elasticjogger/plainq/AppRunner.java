@@ -1,6 +1,7 @@
 package com.elasticjogger.plainq;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -10,49 +11,33 @@ import java.util.Enumeration;
 import java.util.List;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.ConnectionMetaData;
 
 public class AppRunner
 {
-  ConnectionFactoryProvider connectionFactoryProvider = new ConnectionFactoryProviderJndiImpl("src/main/resources/broker.properties");
-  ClassLoader classLoader;
+  ConnectionFactoryProvider connectionFactoryProvider;
+  private static String LIB_PATH;
+  private static String LIB_PATH_EXT;
+  private static String BROKER_PROPERTIES_PATH;
 
-  public AppRunner()
+  public AppRunner(String brokerPropertiesPath)
   {
-    classLoader = this.getClass().getClassLoader();
-  }
-
-  public static void main1(String[] args) throws Exception
-  {
-    AppRunner runner = new AppRunner();
-    runner.start();
+    connectionFactoryProvider = new ConnectionFactoryProviderJndiImpl(brokerPropertiesPath);
   }
 
   public static void main(String[] args) throws Exception
   {
-    String libPath = null;
-    String libPathExt = null;
+    initPaths(args);
 
-    if (args.length > 0)
-    {
-      libPath = "../temp/lib/1";
-      libPathExt = "target/runtime/plainq/lib";
-    }
-    else
-    {
-      libPath = "../../../../temp/lib/1";
-      libPathExt = "lib";
-    }
-
-    List<URL> urls = listJars(libPathExt);
-    urls.addAll(listJars(libPath));
+    List<URL> urls = listJars(LIB_PATH_EXT);
+    urls.addAll(listJars(LIB_PATH));
 
     ClassLoader classloader = new URLClassLoader(urls.toArray(new URL[urls.size()]), ClassLoader.getSystemClassLoader().getParent());
     Thread.currentThread().setContextClassLoader(classloader);
 
     Class<?> runnerClass = classloader.loadClass("com.elasticjogger.plainq.AppRunner");
 
-    Object runner = runnerClass.newInstance();
+    Constructor constructor = runnerClass.getConstructor(String.class);
+    Object runner = constructor.newInstance(BROKER_PROPERTIES_PATH);
     Method start = runnerClass.getMethod("start");
     start.invoke(runner);
   }
@@ -84,11 +69,26 @@ public class AppRunner
         if (file.isFile())
         {
           result.add(file.toURI().toURL());
-          System.out.println(file.toURI().toURL());
         }
       }
     }
     return result;
+  }
+
+  public static void initPaths(String[] args)
+  {
+    if (args.length > 0 && args[0].equals("development"))
+    {
+      LIB_PATH = "../temp/lib/1";
+      LIB_PATH_EXT = "target/runtime/plainq/lib";
+      BROKER_PROPERTIES_PATH = "src/main/resources/broker.properties";
+    }
+    else
+    {
+      LIB_PATH = "../../../../temp/lib/1";
+      LIB_PATH_EXT = "lib";
+      BROKER_PROPERTIES_PATH = "lib/broker.properties";
+    }
   }
 
   public static void log(Object o)

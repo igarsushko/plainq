@@ -26,6 +26,14 @@
       </includes>
       <fileMode>750</fileMode>
     </fileSet>
+    <fileSet>
+      <directory>${basedir}/target/classes</directory>
+      <outputDirectory>${project.artifactId}/lib</outputDirectory>
+      <includes>
+        <include>broker.properties</include>
+      </includes>
+      <fileMode>750</fileMode>
+    </fileSet>
   </fileSets>
 
 </assembly>
