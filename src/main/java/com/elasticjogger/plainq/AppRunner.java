@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -13,19 +14,41 @@ import javax.jms.ConnectionMetaData;
 
 public class AppRunner
 {
-
-  ClassLoader mClassLoader;
+  ConnectionFactoryProvider connectionFactoryProvider = new ConnectionFactoryProviderJndiImpl("src/main/resources/broker.properties");
+  ClassLoader classLoader;
 
   public AppRunner()
   {
-    mClassLoader = this.getClass().getClassLoader();
+    classLoader = this.getClass().getClassLoader();
+  }
+
+  public static void main1(String[] args) throws Exception
+  {
+    AppRunner runner = new AppRunner();
+    runner.start();
   }
 
   public static void main(String[] args) throws Exception
   {
-    List<URL> urls = listJars("../temp/lib");
-    urls.addAll(listJars("target/runtime/plainq/lib"));
+    String libPath = null;
+    String libPathExt = null;
+
+    if (args.length > 0)
+    {
+      libPath = "../temp/lib/1";
+      libPathExt = "target/runtime/plainq/lib";
+    }
+    else
+    {
+      libPath = "../../../../temp/lib/1";
+      libPathExt = "lib";
+    }
+
+    List<URL> urls = listJars(libPathExt);
+    urls.addAll(listJars(libPath));
+
     ClassLoader classloader = new URLClassLoader(urls.toArray(new URL[urls.size()]), ClassLoader.getSystemClassLoader().getParent());
+    Thread.currentThread().setContextClassLoader(classloader);
 
     Class<?> runnerClass = classloader.loadClass("com.elasticjogger.plainq.AppRunner");
 
@@ -36,12 +59,12 @@ public class AppRunner
 
   public void start() throws Exception
   {
-    Class amqClass = mClassLoader.loadClass("org.apache.activemq.ActiveMQConnectionFactory");
-
-    ConnectionFactory factory = (ConnectionFactory) amqClass.newInstance();
+    ConnectionFactory factory = connectionFactoryProvider.getConnectionFactory();
     Connection conn = factory.createConnection();
     ConnectionMetaData metadata = conn.getMetaData();
-    System.out.println(metadata.getJMSVersion());
+    log(metadata.getJMSProviderName());
+
+    conn.close();
   }
 
   public static List<URL> listJars(String dirPath) throws MalformedURLException
@@ -50,15 +73,38 @@ public class AppRunner
     File[] files = dir.listFiles();
 
     List<URL> result = new ArrayList<>();
-    for (int i = 0; i < files.length; i++)
+    if (files != null)
     {
-      File file = files[i];
-      if (file.isFile())
+      for (int i = 0; i < files.length; i++)
       {
-        result.add(file.toURI().toURL());
+        File file = files[i];
+        if (file.isFile())
+        {
+          result.add(file.toURI().toURL());
+          System.out.println(file.toURI().toURL());
+        }
       }
     }
-
     return result;
+  }
+
+  public static void log(Object o)
+  {
+    if (o == null)
+    {
+      System.out.println("null");
+    }
+    else if (o instanceof Enumeration)
+    {
+      Enumeration e = (Enumeration) o;
+      while (e.hasMoreElements())
+      {
+        log(e.nextElement());
+      }
+    }
+    else
+    {
+      System.out.println(o);
+    }
   }
 }
