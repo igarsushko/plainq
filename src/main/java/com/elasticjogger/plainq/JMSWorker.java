@@ -11,12 +11,19 @@ import javax.jms.JMSException;
 public class JMSWorker
 {
   private Connection connection;
-  private ConnectionMetaData connMetadata;
+  private ConnectionInfo connectionInfo;
 
   public JMSWorker(Connection connection) throws JMSException
   {
     this.connection = connection;
-    this.connMetadata = connection.getMetaData();
+    ConnectionMetaData metaData = connection.getMetaData();
+
+    connectionInfo = new ConnectionInfo();
+    connectionInfo.setClientID(this.connection.getClientID());
+    connectionInfo.setJMSProviderName(metaData.getJMSProviderName());
+    connectionInfo.setJMSVersion(metaData.getJMSVersion());
+    connectionInfo.setJMSXPropertyNames(metaData.getJMSXPropertyNames());
+    connectionInfo.setProviderVersion(metaData.getProviderVersion());
 
     connection.setExceptionListener(new ExceptionListener()
     {
@@ -28,39 +35,8 @@ public class JMSWorker
     });
   }
 
-  public String getJMSVersion() throws JMSException
+  public ConnectionInfo getConnectionInfo()
   {
-    return connMetadata.getJMSVersion();
-  }
-
-  public String getJMSProviderName() throws JMSException
-  {
-    return connMetadata.getJMSProviderName();
-  }
-
-  public List<String> getJMSXPropertyNames() throws JMSException
-  {
-    List<String> result = new ArrayList<>();
-
-    Enumeration e = connMetadata.getJMSXPropertyNames();
-    if (e != null)
-    {
-      while (e.hasMoreElements())
-      {
-        result.add(e.nextElement().toString());
-      }
-    }
-
-    return result;
-  }
-
-  public String getProviderVersion() throws JMSException
-  {
-    return connMetadata.getProviderVersion();
-  }
-
-  public String getClientID() throws JMSException
-  {
-    return connection.getClientID();
+    return connectionInfo;
   }
 }
