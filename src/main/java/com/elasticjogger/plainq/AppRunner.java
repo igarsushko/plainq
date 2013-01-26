@@ -60,11 +60,14 @@ public class AppRunner
   public void start() throws Exception
   {
     ConnectionFactory factory = connectionFactoryProvider.getConnectionFactory();
-    Connection conn = factory.createConnection();
-    ConnectionMetaData metadata = conn.getMetaData();
-    log(metadata.getJMSProviderName());
+    Connection connection = factory.createConnection();
+    connection.start();
 
-    conn.close();
+    JMSWorker jmsWorker = new JMSWorker(connection);
+    log(jmsWorker.getProviderInfo());
+    log(jmsWorker.getClientID());
+
+    connection.close();
   }
 
   public static List<URL> listJars(String dirPath) throws MalformedURLException

@@ -1,8 +1,5 @@
 package com.elasticjogger.plainq;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
 import javax.jms.Connection;
 import javax.jms.ConnectionMetaData;
 import javax.jms.ExceptionListener;
@@ -11,19 +8,18 @@ import javax.jms.JMSException;
 public class JMSWorker
 {
   private Connection connection;
-  private ConnectionInfo connectionInfo;
+  private ProviderInfo providerInfo;
 
   public JMSWorker(Connection connection) throws JMSException
   {
     this.connection = connection;
     ConnectionMetaData metaData = connection.getMetaData();
 
-    connectionInfo = new ConnectionInfo();
-    connectionInfo.setClientID(this.connection.getClientID());
-    connectionInfo.setJMSProviderName(metaData.getJMSProviderName());
-    connectionInfo.setJMSVersion(metaData.getJMSVersion());
-    connectionInfo.setJMSXPropertyNames(metaData.getJMSXPropertyNames());
-    connectionInfo.setProviderVersion(metaData.getProviderVersion());
+    providerInfo = new ProviderInfo();
+    providerInfo.setJMSProviderName(metaData.getJMSProviderName());
+    providerInfo.setJMSVersion(metaData.getJMSVersion());
+    providerInfo.setJMSXPropertyNames(metaData.getJMSXPropertyNames());
+    providerInfo.setProviderVersion(metaData.getProviderVersion());
 
     connection.setExceptionListener(new ExceptionListener()
     {
@@ -35,8 +31,13 @@ public class JMSWorker
     });
   }
 
-  public ConnectionInfo getConnectionInfo()
+  public ProviderInfo getProviderInfo()
   {
-    return connectionInfo;
+    return providerInfo;
+  }
+
+  public String getClientID() throws JMSException
+  {
+    return connection.getClientID();
   }
 }

@@ -4,13 +4,23 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-public class ConnectionInfo
+public class ProviderInfo
 {
   String JMSVersion;
   String JMSProviderName;
   String providerVersion;
   List<String> JMSXPropertyNames;
-  String clientID;
+
+  @Override
+  public String toString()
+  {
+    String result = "JMSVersion: " + JMSVersion + "\n";
+    result += "JMSProviderName: " + JMSProviderName + "\n";
+    result += "JMSProviderVersion: " + providerVersion + "\n";
+    result += "JMSXPropertyNames: " + JMSXPropertyNames;
+
+    return result;
+  }
 
   public String getJMSVersion()
   {
@@ -58,15 +68,4 @@ public class ConnectionInfo
       }
     }
   }
-
-  public String getClientID()
-  {
-    return clientID;
-  }
-
-  public void setClientID(String clientID)
-  {
-    this.clientID = clientID;
-  }
-
 }
