@@ -11,6 +11,7 @@ import javax.jms.Queue;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.jms.Topic;
 
 public class JMSWorker
 {
@@ -41,17 +42,22 @@ public class JMSWorker
     start();
   }
 
-  /**
-   * Sends message to destination, either to queue or topic.
-   *
-   * @param message
-   * @throws JMSException
-   */
   public void sendTextMessageToQueue(String queueName, String message) throws JMSException
   {
-    TextMessage textMessage = session.createTextMessage(message);
     Queue queue = session.createQueue(queueName);
-    MessageProducer producer = session.createProducer(queue);
+    sendTextMessage(message, queue);
+  }
+
+  public void sendTextMessageToTopic(String topicName, String message) throws JMSException
+  {
+    Topic topic = session.createTopic(topicName);
+    sendTextMessage(message, topic);
+  }
+
+  private void sendTextMessage(String message, Destination destination) throws JMSException
+  {
+    TextMessage textMessage = session.createTextMessage(message);
+    MessageProducer producer = session.createProducer(destination);
     producer.send(textMessage);
   }
 

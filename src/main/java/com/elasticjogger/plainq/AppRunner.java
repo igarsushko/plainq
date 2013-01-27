@@ -63,6 +63,7 @@ public class AppRunner
     log(jmsWorker.getClientID());
 
     jmsWorker.sendTextMessageToQueue("myQueue", "i am the message");
+    jmsWorker.sendTextMessageToTopic("myTopic", "i am the message");
 
     jmsWorker.stop();
   }
