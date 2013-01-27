@@ -7,6 +7,7 @@ import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.MessageProducer;
+import javax.jms.Queue;
 import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TextMessage;
@@ -36,7 +37,7 @@ public class JMSWorker
         throw new UnsupportedOperationException("Not supported yet.");
       }
     });
-    
+
     start();
   }
 
@@ -46,10 +47,11 @@ public class JMSWorker
    * @param message
    * @throws JMSException
    */
-  public void sendTextMessage(Destination destination, String message) throws JMSException
+  public void sendTextMessageToQueue(String queueName, String message) throws JMSException
   {
     TextMessage textMessage = session.createTextMessage(message);
-    MessageProducer producer = session.createProducer(destination);
+    Queue queue = session.createQueue(queueName);
+    MessageProducer producer = session.createProducer(queue);
     producer.send(textMessage);
   }
 

@@ -9,19 +9,32 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
 
 public class AppRunner
 {
-  ConnectionFactoryProvider connectionFactoryProvider;
+  ConnectionProvider connectionProvider;
   private static String LIB_PATH;
   private static String APP_LIB_PATH;
   private static String BROKER_PROPERTIES_PATH;
+  private static final Logger log = Logger.getLogger(AppRunner.class.getName());
 
-  public AppRunner(String brokerPropertiesPath)
+  public AppRunner(String brokerPropertiesPath) throws Exception
   {
-    connectionFactoryProvider = new ConnectionFactoryProviderJndiImpl(brokerPropertiesPath);
+    connectionProvider = new ConnectionProviderJndiImpl(brokerPropertiesPath);
+    configureLogger();
+  }
+
+  private void configureLogger()
+  {
+    Logger logger = Logger.getLogger("com.elasticjogger");
+    logger.addHandler(new ConsoleHandler());
+
+    logger.setLevel(Level.FINE);
   }
 
   public static void main(String[] args) throws Exception
@@ -43,12 +56,14 @@ public class AppRunner
 
   public void start() throws Exception
   {
-    ConnectionFactory factory = connectionFactoryProvider.getConnectionFactory();
-    Connection connection = factory.createConnection();
+    Connection connection = connectionProvider.createConnection();
 
     JMSWorker jmsWorker = new JMSWorker(connection);
     log(jmsWorker.getProviderInfo());
     log(jmsWorker.getClientID());
+
+    jmsWorker.sendTextMessageToQueue("myQueue", "i am the message");
+
     jmsWorker.stop();
   }
 
@@ -68,7 +83,7 @@ public class AppRunner
           if (file.isFile() && file.getName().endsWith("jar"))
           {
             result.add(file.toURI().toURL());
-            log(file.toURI().toURL());
+            log.info(file.toURI().toURL().toString());
           }
         }
       }
