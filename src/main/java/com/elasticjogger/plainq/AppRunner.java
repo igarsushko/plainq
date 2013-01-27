@@ -45,13 +45,11 @@ public class AppRunner
   {
     ConnectionFactory factory = connectionFactoryProvider.getConnectionFactory();
     Connection connection = factory.createConnection();
-    connection.start();
 
     JMSWorker jmsWorker = new JMSWorker(connection);
     log(jmsWorker.getProviderInfo());
     log(jmsWorker.getClientID());
-
-    connection.close();
+    jmsWorker.stop();
   }
 
   public static List<URL> listJars(String... dirPaths) throws MalformedURLException

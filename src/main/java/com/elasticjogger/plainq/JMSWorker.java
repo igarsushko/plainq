@@ -1,13 +1,20 @@
 package com.elasticjogger.plainq;
 
+import java.util.UUID;
 import javax.jms.Connection;
 import javax.jms.ConnectionMetaData;
+import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
+import javax.jms.MessageProducer;
+import javax.jms.QueueSession;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 
 public class JMSWorker
 {
   private Connection connection;
+  private Session session;
   private ProviderInfo providerInfo;
 
   public JMSWorker(Connection connection) throws JMSException
@@ -29,6 +36,21 @@ public class JMSWorker
         throw new UnsupportedOperationException("Not supported yet.");
       }
     });
+    
+    start();
+  }
+
+  /**
+   * Sends message to destination, either to queue or topic.
+   *
+   * @param message
+   * @throws JMSException
+   */
+  public void sendTextMessage(Destination destination, String message) throws JMSException
+  {
+    TextMessage textMessage = session.createTextMessage(message);
+    MessageProducer producer = session.createProducer(destination);
+    producer.send(textMessage);
   }
 
   public ProviderInfo getProviderInfo()
@@ -39,5 +61,17 @@ public class JMSWorker
   public String getClientID() throws JMSException
   {
     return connection.getClientID();
+  }
+
+  private void start() throws JMSException
+  {
+    connection.start();
+    session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+  }
+
+  public void stop() throws JMSException
+  {
+    session.close();
+    connection.close();
   }
 }
