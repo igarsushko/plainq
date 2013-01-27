@@ -16,7 +16,7 @@ public class AppRunner
 {
   ConnectionFactoryProvider connectionFactoryProvider;
   private static String LIB_PATH;
-  private static String LIB_PATH_EXT;
+  private static String APP_LIB_PATH;
   private static String BROKER_PROPERTIES_PATH;
 
   public AppRunner(String brokerPropertiesPath)
@@ -28,8 +28,7 @@ public class AppRunner
   {
     initPaths(args);
 
-    List<URL> urls = listJars(LIB_PATH_EXT);
-    urls.addAll(listJars(LIB_PATH));
+    List<URL> urls = listJars(LIB_PATH, APP_LIB_PATH);
 
     ClassLoader classloader = new URLClassLoader(urls.toArray(new URL[urls.size()]), ClassLoader.getSystemClassLoader().getParent());
     Thread.currentThread().setContextClassLoader(classloader);
@@ -55,20 +54,24 @@ public class AppRunner
     connection.close();
   }
 
-  public static List<URL> listJars(String dirPath) throws MalformedURLException
+  public static List<URL> listJars(String... dirPaths) throws MalformedURLException
   {
-    File dir = new File(dirPath);
-    File[] files = dir.listFiles();
-
     List<URL> result = new ArrayList<>();
-    if (files != null)
+    for (String path : dirPaths)
     {
-      for (int i = 0; i < files.length; i++)
+      File dir = new File(path);
+      File[] files = dir.listFiles();
+
+      if (files != null)
       {
-        File file = files[i];
-        if (file.isFile())
+        for (int i = 0; i < files.length; i++)
         {
-          result.add(file.toURI().toURL());
+          File file = files[i];
+          if (file.isFile() && file.getName().endsWith("jar"))
+          {
+            result.add(file.toURI().toURL());
+            log(file.toURI().toURL());
+          }
         }
       }
     }
@@ -80,13 +83,13 @@ public class AppRunner
     if (args.length > 0 && args[0].equals("development"))
     {
       LIB_PATH = "../temp/lib/1";
-      LIB_PATH_EXT = "target/runtime/plainq/lib";
+      APP_LIB_PATH = "target";
       BROKER_PROPERTIES_PATH = "src/main/resources/broker.properties";
     }
     else
     {
-      LIB_PATH = "../../../../temp/lib/1";
-      LIB_PATH_EXT = "lib";
+      LIB_PATH = "../../../../temp/lib/1";//"lib";
+      APP_LIB_PATH = ".";
       BROKER_PROPERTIES_PATH = "lib/broker.properties";
     }
   }

@@ -5,18 +5,8 @@
   </formats>
   <includeBaseDirectory>false</includeBaseDirectory>
 
-  <dependencySets>
-    <dependencySet>
-      <scope>runtime</scope><!-- runtime excludes provided jars -->
-      <outputDirectory>${project.artifactId}/lib</outputDirectory>
-      <useTransitiveDependencies>true</useTransitiveDependencies>
-      <unpack>false</unpack>
-    </dependencySet>
-  </dependencySets>
-
   <fileSets>
     <fileSet>
-      <!-- bundle filtered recources-->
       <directory>${basedir}/target/classes</directory>
       <outputDirectory>${project.artifactId}</outputDirectory>
       <includes>
@@ -31,6 +21,14 @@
       <outputDirectory>${project.artifactId}/lib</outputDirectory>
       <includes>
         <include>broker.properties</include>
+      </includes>
+      <fileMode>750</fileMode>
+    </fileSet>
+    <fileSet>
+      <directory>${basedir}/target</directory>
+      <outputDirectory>${project.artifactId}</outputDirectory>
+      <includes>
+        <include>${project.artifactId}-${project.version}.jar</include>
       </includes>
       <fileMode>750</fileMode>
     </fileSet>
