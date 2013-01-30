@@ -10,7 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import javax.jms.Connection;
 
 public class AppRunner
@@ -28,8 +30,15 @@ public class AppRunner
 
   private void configureLogger()
   {
+    //Reset configuration so default configuration is not applied
+    //default config is at %JAVA_HOME%\jdk${version}\jre\lib\logging.properties
+    LogManager.getLogManager().reset();
+    System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$td.%1$tm.%1$tY %1$tT.%1$tL] %2$s [%4$s] - %5$s%6$s%n");
+
     Logger logger = Logger.getLogger("com.elasticjogger");
-    logger.addHandler(new ConsoleHandler());
+    ConsoleHandler ch = new ConsoleHandler();
+    ch.setFormatter(new SimpleFormatter());
+    logger.addHandler(ch);
 
     logger.setLevel(Level.FINE);
   }
