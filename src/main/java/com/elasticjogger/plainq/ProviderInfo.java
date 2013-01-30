@@ -14,10 +14,8 @@ public class ProviderInfo
   @Override
   public String toString()
   {
-    String result = "JMSVersion: " + JMSVersion + "\n";
-    result += "JMSProviderName: " + JMSProviderName + "\n";
-    result += "JMSProviderVersion: " + providerVersion + "\n";
-    result += "JMSXPropertyNames: " + JMSXPropertyNames;
+    String result = JMSProviderName + " " + providerVersion + ", JMS " + JMSVersion;
+    result += ", JMSXProperties " + JMSXPropertyNames;
 
     return result;
   }
