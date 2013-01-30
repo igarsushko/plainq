@@ -1,14 +1,18 @@
 package com.elasticjogger.plainq;
 
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.logging.Logger;
 import javax.jms.Connection;
 import javax.jms.ConnectionMetaData;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
-import javax.jms.QueueSession;
+import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
@@ -18,6 +22,7 @@ public class JMSWorker
   private Connection connection;
   private Session session;
   private ProviderInfo providerInfo;
+  private static final Logger log = Logger.getLogger(JMSWorker.class.getName());
 
   public JMSWorker(Connection connection) throws JMSException
   {
@@ -52,6 +57,26 @@ public class JMSWorker
   {
     Topic topic = session.createTopic(topicName);
     sendTextMessage(message, topic);
+  }
+
+  public List<Message> browseQueue(String queueName) throws JMSException
+  {
+    Queue queue = session.createQueue(queueName);
+    QueueBrowser browser = session.createBrowser(queue);
+
+    List<Message> result = new ArrayList<>();
+
+    Enumeration<Message> messages = browser.getEnumeration();
+    while (messages.hasMoreElements())
+    {
+      Message message = messages.nextElement();
+      result.add(message);
+      log.fine(message.toString());
+    }
+
+    browser.close();
+
+    return result;
   }
 
   private void sendTextMessage(String message, Destination destination) throws JMSException

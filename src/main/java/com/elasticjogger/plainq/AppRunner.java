@@ -35,12 +35,15 @@ public class AppRunner
     LogManager.getLogManager().reset();
     System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$td.%1$tm.%1$tY %1$tT.%1$tL] %2$s [%4$s] - %5$s%6$s%n");
 
+    Level level = Level.FINE;
+
     Logger logger = Logger.getLogger("com.elasticjogger");
+    logger.setLevel(level);
+
     ConsoleHandler ch = new ConsoleHandler();
+    ch.setLevel(level);
     ch.setFormatter(new SimpleFormatter());
     logger.addHandler(ch);
-
-    logger.setLevel(Level.FINE);
   }
 
   public static void main(String[] args) throws Exception
@@ -69,6 +72,8 @@ public class AppRunner
 
     jmsWorker.sendTextMessageToQueue("myQueue", "i am the message");
     jmsWorker.sendTextMessageToTopic("myTopic", "i am the message");
+
+    jmsWorker.browseQueue("myQueue");
 
     jmsWorker.stop();
   }
