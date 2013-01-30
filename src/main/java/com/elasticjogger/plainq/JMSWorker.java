@@ -83,21 +83,14 @@ public class JMSWorker
     return result;
   }
 
-  public void listenTopicNonDurable(String topicName) throws JMSException
+  public void listenTopicNonDurable(String topicName, MessageListener listener) throws JMSException
   {
     TopicConnection topicConnection = (TopicConnection) connection;
     TopicSession topicSession = topicConnection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
 
     Topic topic = topicSession.createTopic(topicName);
     TopicSubscriber subscriber = topicSession.createSubscriber(topic);
-    subscriber.setMessageListener(new MessageListener()
-    {
-      @Override
-      public void onMessage(Message message)
-      {
-        log.info(message.toString());
-      }
-    });
+    subscriber.setMessageListener(listener);
   }
 
   private void sendTextMessage(String message, Destination destination) throws JMSException

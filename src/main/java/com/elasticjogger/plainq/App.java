@@ -2,6 +2,8 @@ package com.elasticjogger.plainq;
 
 import java.util.logging.Logger;
 import javax.jms.Connection;
+import javax.jms.Message;
+import javax.jms.MessageListener;
 
 public class App
 {
@@ -22,7 +24,14 @@ public class App
     log.info(jmsWorker.getProviderInfo().toString());
     log.info(jmsWorker.getClientID());
 
-    jmsWorker.listenTopicNonDurable("myTopic");
+    jmsWorker.listenTopicNonDurable("myTopic", new MessageListener()
+    {
+      @Override
+      public void onMessage(Message message)
+      {
+        log.info("From topic: " + message.toString());
+      }
+    });
 
     jmsWorker.sendTextMessageToQueue("myQueue", "i am the message");
     jmsWorker.sendTextMessageToTopic("myTopic", "i am the message from topic");
