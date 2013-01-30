@@ -10,12 +10,16 @@ import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
+import javax.jms.TopicConnection;
+import javax.jms.TopicSession;
+import javax.jms.TopicSubscriber;
 
 public class JMSWorker
 {
@@ -71,12 +75,29 @@ public class JMSWorker
     {
       Message message = messages.nextElement();
       result.add(message);
-      log.fine(message.toString());
+      log.fine(message == null ? "null" : message.toString());
     }
 
     browser.close();
 
     return result;
+  }
+
+  public void listenTopicNonDurable(String topicName) throws JMSException
+  {
+    TopicConnection topicConnection = (TopicConnection) connection;
+    TopicSession topicSession = topicConnection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+
+    Topic topic = topicSession.createTopic(topicName);
+    TopicSubscriber subscriber = topicSession.createSubscriber(topic);
+    subscriber.setMessageListener(new MessageListener()
+    {
+      @Override
+      public void onMessage(Message message)
+      {
+        log.info(message.toString());
+      }
+    });
   }
 
   private void sendTextMessage(String message, Destination destination) throws JMSException

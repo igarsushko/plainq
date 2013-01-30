@@ -13,22 +13,46 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-import javax.jms.Connection;
 
 public class AppRunner
 {
-  ConnectionProvider connectionProvider;
   private static List<URL> URLS;
   private static String BROKER_PROPERTIES_PATH;
   private static final Logger log = Logger.getLogger(AppRunner.class.getName());
 
-  public AppRunner(String brokerPropertiesPath) throws Exception
+  public static void main(String[] args) throws Exception
   {
-    connectionProvider = new ConnectionProviderJndiImpl(brokerPropertiesPath);
+    initVars(args);
     configureLogger();
+
+    ClassLoader classloader = new URLClassLoader(URLS.toArray(new URL[URLS.size()]), ClassLoader.getSystemClassLoader().getParent());
+    Thread.currentThread().setContextClassLoader(classloader);
+
+    Class<?> runnerClass = classloader.loadClass("com.elasticjogger.plainq.App");
+
+    Constructor constructor = runnerClass.getConstructor(String.class);
+    Object runner = constructor.newInstance(BROKER_PROPERTIES_PATH);
+    Method start = runnerClass.getMethod("start");
+    start.invoke(runner);
   }
 
-  private void configureLogger()
+  public static void initVars(String[] args) throws Exception
+  {
+    URLS = new ArrayList<>();
+    if (args.length > 0 && args[0].equals("development"))
+    {
+      URLS.addAll(listJars("../temp/lib/1"));
+      URLS.add(new File("target/classes/").toURI().toURL());
+      BROKER_PROPERTIES_PATH = "src/main/resources/broker.properties";
+    }
+    else
+    {
+      URLS.addAll(listJars(".", "../../../../temp/lib/1"));//"lib";
+      BROKER_PROPERTIES_PATH = "lib/broker.properties";
+    }
+  }
+
+  public static void configureLogger()
   {
     //Reset configuration so default configuration is not applied
     //default config is at %JAVA_HOME%\jdk${version}\jre\lib\logging.properties
@@ -44,38 +68,6 @@ public class AppRunner
     ch.setLevel(level);
     ch.setFormatter(new SimpleFormatter());
     logger.addHandler(ch);
-  }
-
-  public static void main(String[] args) throws Exception
-  {
-    initVars(args);
-
-    ClassLoader classloader = new URLClassLoader(URLS.toArray(new URL[URLS.size()]), ClassLoader.getSystemClassLoader().getParent());
-    Thread.currentThread().setContextClassLoader(classloader);
-
-    Class<?> runnerClass = classloader.loadClass("com.elasticjogger.plainq.AppRunner");
-
-    Constructor constructor = runnerClass.getConstructor(String.class);
-    Object runner = constructor.newInstance(BROKER_PROPERTIES_PATH);
-    Method start = runnerClass.getMethod("start");
-    start.invoke(runner);
-  }
-
-  public void start() throws Exception
-  {
-    Connection connection = connectionProvider.createConnection();
-
-    JMSWorker jmsWorker = new JMSWorker(connection);
-
-    log.info(jmsWorker.getProviderInfo().toString());
-    log.info(jmsWorker.getClientID());
-
-    jmsWorker.sendTextMessageToQueue("myQueue", "i am the message");
-    jmsWorker.sendTextMessageToTopic("myTopic", "i am the message");
-
-    jmsWorker.browseQueue("myQueue");
-
-    jmsWorker.stop();
   }
 
   public static List<URL> listJars(String... dirPaths) throws MalformedURLException
@@ -100,21 +92,5 @@ public class AppRunner
       }
     }
     return result;
-  }
-
-  public static void initVars(String[] args) throws Exception
-  {
-    URLS = new ArrayList<>();
-    if (args.length > 0 && args[0].equals("development"))
-    {
-      URLS.addAll(listJars("../temp/lib/1"));
-      URLS.add(new File("target/classes/").toURI().toURL());
-      BROKER_PROPERTIES_PATH = "src/main/resources/broker.properties";
-    }
-    else
-    {
-      URLS.addAll(listJars(".", "../../../../temp/lib/1"));//"lib";
-      BROKER_PROPERTIES_PATH = "lib/broker.properties";
-    }
   }
 }
