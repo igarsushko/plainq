@@ -7,19 +7,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.jms.Connection;
-import javax.jms.Destination;
 
 public class AppRunner
 {
   ConnectionProvider connectionProvider;
-  private static String LIB_PATH;
-  private static String APP_LIB_PATH;
+  private static List<URL> URLS;
   private static String BROKER_PROPERTIES_PATH;
   private static final Logger log = Logger.getLogger(AppRunner.class.getName());
 
@@ -39,11 +36,9 @@ public class AppRunner
 
   public static void main(String[] args) throws Exception
   {
-    initPaths(args);
+    initVars(args);
 
-    List<URL> urls = listJars(LIB_PATH, APP_LIB_PATH);
-
-    ClassLoader classloader = new URLClassLoader(urls.toArray(new URL[urls.size()]), ClassLoader.getSystemClassLoader().getParent());
+    ClassLoader classloader = new URLClassLoader(URLS.toArray(new URL[URLS.size()]), ClassLoader.getSystemClassLoader().getParent());
     Thread.currentThread().setContextClassLoader(classloader);
 
     Class<?> runnerClass = classloader.loadClass("com.elasticjogger.plainq.AppRunner");
@@ -59,8 +54,9 @@ public class AppRunner
     Connection connection = connectionProvider.createConnection();
 
     JMSWorker jmsWorker = new JMSWorker(connection);
-    log(jmsWorker.getProviderInfo());
-    log(jmsWorker.getClientID());
+
+    log.info(jmsWorker.getProviderInfo().toString());
+    log.info(jmsWorker.getClientID());
 
     jmsWorker.sendTextMessageToQueue("myQueue", "i am the message");
     jmsWorker.sendTextMessageToTopic("myTopic", "i am the message");
@@ -84,7 +80,7 @@ public class AppRunner
           if (file.isFile() && file.getName().endsWith("jar"))
           {
             result.add(file.toURI().toURL());
-            log.info(file.toURI().toURL().toString());
+            log.fine(file.toURI().toURL().toString());
           }
         }
       }
@@ -92,39 +88,19 @@ public class AppRunner
     return result;
   }
 
-  public static void initPaths(String[] args)
+  public static void initVars(String[] args) throws Exception
   {
+    URLS = new ArrayList<>();
     if (args.length > 0 && args[0].equals("development"))
     {
-      LIB_PATH = "../temp/lib/1";
-      APP_LIB_PATH = "target";
+      URLS.addAll(listJars("../temp/lib/1"));
+      URLS.add(new File("target/classes/").toURI().toURL());
       BROKER_PROPERTIES_PATH = "src/main/resources/broker.properties";
     }
     else
     {
-      LIB_PATH = "../../../../temp/lib/1";//"lib";
-      APP_LIB_PATH = ".";
+      URLS.addAll(listJars(".", "../../../../temp/lib/1"));//"lib";
       BROKER_PROPERTIES_PATH = "lib/broker.properties";
-    }
-  }
-
-  public static void log(Object o)
-  {
-    if (o == null)
-    {
-      System.out.println("null");
-    }
-    else if (o instanceof Enumeration)
-    {
-      Enumeration e = (Enumeration) o;
-      while (e.hasMoreElements())
-      {
-        log(e.nextElement());
-      }
-    }
-    else
-    {
-      System.out.println(o);
     }
   }
 }
