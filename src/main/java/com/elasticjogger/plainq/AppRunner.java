@@ -7,6 +7,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
@@ -28,12 +29,17 @@ public class AppRunner
     ClassLoader classloader = new URLClassLoader(URLS.toArray(new URL[URLS.size()]), ClassLoader.getSystemClassLoader().getParent());
     Thread.currentThread().setContextClassLoader(classloader);
 
-    Class<?> runnerClass = classloader.loadClass("com.elasticjogger.plainq.App");
+//    Class<?> runnerClass = classloader.loadClass("com.elasticjogger.plainq.App");
+//    Constructor constructor = runnerClass.getConstructor(String.class);
+//    Object runner = constructor.newInstance(BROKER_PROPERTIES_PATH);
+//    Method start = runnerClass.getMethod("startApplication");
+//    start.invoke(runner);
 
-    Constructor constructor = runnerClass.getConstructor(String.class);
-    Object runner = constructor.newInstance(BROKER_PROPERTIES_PATH);
-    Method start = runnerClass.getMethod("startApplication");
-    start.invoke(runner);
+    Class<?> runnerClass = classloader.loadClass("com.elasticjogger.plainq.ui.PlainqUI");
+    Method main = runnerClass.getDeclaredMethod("main", String[].class);
+    main.invoke(null, (Object) new String[]
+            {
+            });
   }
 
   public static void initVars(String[] args) throws Exception
