@@ -15,7 +15,7 @@ public class App
     connectionProvider = new ConnectionProviderJndiImpl(brokerPropertiesPath);
   }
 
-  public void start() throws Exception
+  public void startApplication() throws Exception
   {
     Connection connection = connectionProvider.createConnection();
 

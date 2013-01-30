@@ -85,7 +85,7 @@ public class JMSWorker
 
   public void listenTopicNonDurable(String topicName, MessageListener listener) throws JMSException
   {
-    TopicConnection topicConnection = (TopicConnection) connection;
+    TopicConnection topicConnection = (TopicConnection) connection;//TODO find another way, maybe amq connection class implements both queue and topic connection interfaces
     TopicSession topicSession = topicConnection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
 
     Topic topic = topicSession.createTopic(topicName);
@@ -116,9 +116,9 @@ public class JMSWorker
     session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
   }
 
+  //TODO create stop timeout
   public void stop() throws JMSException
   {
-    session.close();
     connection.close();
   }
 }

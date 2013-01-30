@@ -32,7 +32,7 @@ public class AppRunner
 
     Constructor constructor = runnerClass.getConstructor(String.class);
     Object runner = constructor.newInstance(BROKER_PROPERTIES_PATH);
-    Method start = runnerClass.getMethod("start");
+    Method start = runnerClass.getMethod("startApplication");
     start.invoke(runner);
   }
 
